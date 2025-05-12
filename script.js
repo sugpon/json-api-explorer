@@ -1,61 +1,82 @@
-
+// Get references to HTML elements
 const postList = document.getElementById("postList");
 const postForm = document.getElementById("postForm");
-const fetchButton= document.getElementById("fetchButton");
-const loadingMessage = document.getElementById('loadingMessage');
+const fetchButton = document.getElementById("fetchButton");
 
-loadingMessage.style.display = 'none'; //hide loading screen
+// Create and insert a loading message div (hidden by default)
+const loadingMessage = document.createElement('div');
+loadingMessage.textContent = "Loading...";
+loadingMessage.style.display = 'none'; // Hide initially
+postList.parentNode.insertBefore(loadingMessage, postList);
 
-const renderPosts = (posts) => { //render data to postlist div
-    postList.innerHTML="";
-    posts.forEach((post) =>{
-        const postElement = document.createElement("div");
-        postElement.innerHTML= `
-        <h3>${post.title}</h3>
-        <p>${post.body}</p>
-        <hr/>
-        `;
-        postList.appendChild(postElement); //add postelement divs to postlist ddv
-    })
+// Function to display posts on the page
+function renderPosts(posts) {
+  postList.innerHTML = ""; // Clear previous posts
+
+  posts.forEach(post => {
+    const postElement = document.createElement("div");
+    postElement.innerHTML = `
+      <h3>${post.title}</h3>
+      <p>${post.body}</p>
+      <hr/>
+    `;
+    postList.appendChild(postElement);
+  });
 }
 
-    postForm.addEventListener("submit", (event) => {
-        event.preventDefault(); //default action should not happen
+// When the fetch button is clicked
+fetchButton.addEventListener("click", () => {
+  loadingMessage.style.display = 'block'; // Show loading message
 
-        const title = document.getElementById("titleInput").value;
-        const body = document.getElementById("bodyInput").value;
-
-        fetch("https://jsonplaceholder.typicode.com/posts", { //send post form data in a post request
-            method: "POST",
-            headers: {"Content-type": "application/json"},
-            body: JSON.stringify({ title, body })
-        })
-        .then(function(response){  //get response and set it to json
-            const jsonResponse = response.json();
-            return jsonResponse; 
-        })
-        .then((newPost) => {
-            alert("Post submitted!");
-            renderPosts([newPost]); //re-render with only new post
-        })
-        .catch((error) => console.error("Error submitting post:",error));// catch error if fetch fails
-        });
-
-fetchButton.addEventListener("click", ()=>{
-    loadingMessage.style.display = 'block'; //show loading
-    
-    fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
-        .then(function(response){  //get response and set it to json format
-            const jsonResponse = response.json();
-            return jsonResponse; //must return
-        })
-        .then(function(data) { //redner json data to div postList
-            renderPosts(data);
-        })
-        .catch((error) => console.error("Error fetching posts:", error)) // catch error if fetch fails
-        .finally(()=>{
-            loadingMessage.style.display = 'none'; //hide loading screen
-        });
-    
+  // Fetch posts from API
+  fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Failed to fetch posts.");
+      }
+      return response.json(); // Convert response to JSON
+    })
+    .then(data => {
+      renderPosts(data); // Show posts on page
+    })
+    .catch(error => {
+      alert("Error fetching posts: " + error.message); // Show error
+    })
+    .finally(() => {
+      loadingMessage.style.display = 'none'; // Hide loading message
+    });
 });
-    
+
+// When the form is submitted
+postForm.addEventListener("submit", event => {
+  event.preventDefault(); // Prevent page from reloading
+
+  const title = document.getElementById("titleInput").value.trim();
+  const body = document.getElementById("bodyInput").value.trim();
+
+  // Check that both fields have values
+  if (!title || !body) {
+    alert("Please fill in both Title and Body.");
+    return;
+  }
+
+  // Send the post data using POST request
+  fetch("https://jsonplaceholder.typicode.com/posts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, body })
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Failed to create post.");
+      }
+      return response.json(); // Get the created post back
+    })
+    .then(newPost => {
+      alert("Post submitted!");
+      renderPosts([newPost]); // Show only the new post
+    })
+    .catch(error => {
+      alert("Error submitting post: " + error.message);
+    });
+});
