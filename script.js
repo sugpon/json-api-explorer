@@ -45,7 +45,7 @@ postForm.addEventListener("submit", event => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, body })
   })
-    .then(response => return response.json()) // Get the created post back
+    .then(response => response.json()) // Get the created post back
     .then(newPost => {
       alert("Post submitted!");
       renderPosts([newPost]); // Show only the new post
