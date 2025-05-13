@@ -25,26 +25,11 @@ function renderPosts(posts) {
 }
 
 // When the fetch button is clicked
-fetchButton.addEventListener("click", () => {
-  loadingMessage.style.display = 'block'; // Show loading message
-
-  // Fetch posts from API
+fetchButton.addEventListener("click", () => {// Fetch posts from API
   fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Failed to fetch posts.");
-      }
-      return response.json(); // Convert response to JSON
-    })
-    .then(data => {
-      renderPosts(data); // Show posts on page
-    })
-    .catch(error => {
-      alert("Error fetching posts: " + error.message); // Show error
-    })
-    .finally(() => {
-      loadingMessage.style.display = 'none'; // Hide loading message
-    });
+    .then(response => response.json())// Convert response to JSON
+    .then(data => renderPosts(data)) // Show posts on page
+    .catch(error => alert("Error fetching posts: " + error.message)) // Show error
 });
 
 // When the form is submitted
@@ -54,24 +39,13 @@ postForm.addEventListener("submit", event => {
   const title = document.getElementById("titleInput").value.trim();
   const body = document.getElementById("bodyInput").value.trim();
 
-  // Check that both fields have values
-  if (!title || !body) {
-    alert("Please fill in both Title and Body.");
-    return;
-  }
-
   // Send the post data using POST request
   fetch("https://jsonplaceholder.typicode.com/posts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, body })
   })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Failed to create post.");
-      }
-      return response.json(); // Get the created post back
-    })
+    .then(response => return response.json()) // Get the created post back
     .then(newPost => {
       alert("Post submitted!");
       renderPosts([newPost]); // Show only the new post
